@@ -1,5 +1,6 @@
 const questions = [
-  `Cosa sono gli SDGs? Quanti sono? Secondo te, una tematica può appartenere a più SDGs?`,
+  `Cosa sono gli SDGs? Quanti sono?`,
+  `Secondo te, una tematica può appartenere a più SDGs? Fai un esempio`,
   `Secondo te l’età media della popolazione senese è in aumento negli ultimi anni?`,
   `Secondo te cos’è il tasso di natalità? E pensi che sia in crescita negli ultimi anni?`,
   `Secondo te la percentuale di giovani che non studiano e non lavorano è al di sopra o al di sotto della media toscana?`,
@@ -16,67 +17,90 @@ const questions = [
 const colors = ["#4CAF50", "#81C784"];
 const canvas = document.getElementById("wheel");
 const ctx = canvas.getContext("2d");
-const radius = canvas.width / 2;
-
 let rotation = 0;
 
+// Imposta canvas responsive
+function resizeCanvas() {
+  const container = document.getElementById("wheelContainer");
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientWidth; // quadrato perfetto
+  drawWheel(rotation);
+}
+
+window.addEventListener("resize", resizeCanvas);
+resizeCanvas();
+
 // Disegna la ruota
-function drawWheel() {
+function drawWheel(rot) {
+  const radius = canvas.width / 2;
   const sectorAngle = (2 * Math.PI) / questions.length;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
   for (let i = 0; i < questions.length; i++) {
-    const startAngle = i * sectorAngle;
+    const startAngle = i * sectorAngle + rot;
     const endAngle = startAngle + sectorAngle;
+
+    // Evidenzia spicchio selezionato centrato sotto la freccia
+    const selectedIndex = getSelectedIndex(rotation);
+    ctx.fillStyle = i === selectedIndex ? "#88e2f8ff" : colors[i % colors.length];
+    
+
     ctx.beginPath();
     ctx.moveTo(radius, radius);
     ctx.arc(radius, radius, radius, startAngle, endAngle);
     ctx.closePath();
-    ctx.fillStyle = colors[i % colors.length];
     ctx.fill();
     ctx.stroke();
+
+    // Numero su ogni spicchio
+    const textAngle = startAngle + sectorAngle / 2;
+    const textRadius = radius * 0.7;
+    ctx.save();
+    ctx.translate(radius, radius);
+    ctx.rotate(textAngle);
+    ctx.textAlign = "center";
+    ctx.fillStyle = "#000";
+    ctx.font = `${Math.floor(radius * 0.12)}px Arial`;
+    ctx.fillText(i + 1, textRadius, 0);
+    ctx.restore();
   }
 }
 
-drawWheel();
+// Ottieni indice spicchio selezionato dalla freccia
+// Restituisce l'indice dello spicchio sotto la freccia
+function getSelectedIndex(rotation) {
+  const sectorAngle = (2 * Math.PI) / questions.length;
+  let adjustedRotation = rotation % (2 * Math.PI);
+  // Lo spicchio vincente è quello in alto (0 rad) senza freccia
+  return Math.floor((questions.length - adjustedRotation / sectorAngle) % questions.length);
+}
 
+
+// Gestione pulsante
 document.getElementById("spinButton").addEventListener("click", () => {
   const randomDegree = Math.random() * 360 + 720; // almeno 2 giri
   const randomRadian = (randomDegree * Math.PI) / 180;
-
-  // Animazione semplice
-  let start = null;
   const duration = 5000;
-  const initialRotation = rotation;
+  const startRotation = rotation;
+  let startTime = null;
 
   function animate(timestamp) {
-    if (!start) start = timestamp;
-    const elapsed = timestamp - start;
+    if (!startTime) startTime = timestamp;
+    const elapsed = timestamp - startTime;
     const progress = Math.min(elapsed / duration, 1);
-    rotation = initialRotation + randomRadian * easeOutCubic(progress);
-    drawRotatedWheel(rotation);
+    rotation = startRotation + randomRadian * easeOutCubic(progress);
+    drawWheel(rotation);
     if (progress < 1) {
       requestAnimationFrame(animate);
     } else {
-      const selectedIndex = Math.floor(
-        ((2 * Math.PI - (rotation % (2 * Math.PI))) / ((2 * Math.PI) / questions.length)) % questions.length
-      );
+      const selected = getSelectedIndex(rotation);
       document.getElementById("selectedQuestion").textContent =
-        `Domanda selezionata: ${questions[selectedIndex]}`;
+        `Domanda selezionata: ${questions[selected]}`;
     }
   }
 
   requestAnimationFrame(animate);
 });
-
-// Disegna la ruota ruotata
-function drawRotatedWheel(rot) {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.translate(radius, radius);
-  ctx.rotate(rot);
-  ctx.translate(-radius, -radius);
-  drawWheel();
-  ctx.restore();
-}
 
 // Funzione easing per decelerazione naturale
 function easeOutCubic(t) {
