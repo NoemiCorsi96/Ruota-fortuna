@@ -1,6 +1,4 @@
 const questions = [
-  `Cosa sono gli SDGs? Quanti sono?`,
-  `Secondo te, una tematica può appartenere a più SDGs? Fai un esempio`,
   `Secondo te l’età media della popolazione senese è in aumento negli ultimi anni?`,
   `Secondo te cos’è il tasso di natalità? E pensi che sia in crescita negli ultimi anni?`,
   `Secondo te la percentuale di giovani che non studiano e non lavorano è al di sopra o al di sotto della media toscana?`,
@@ -9,8 +7,6 @@ const questions = [
   `Secondo te il tasso di occupazione giovanile femminile è stabile negli anni? Ed è maggiore o minore rispetto a quello maschile?`,
   `Secondo te c’è differenza di genere nella retribuzione dei lavoratori?`,
   `Sai spiegare cos’è la differenza di genere?`,
-  `Secondo te, la provincia di Siena produce energia da fonti rinnovabili? Se sì, più o meno rispetto alla media toscana?`,
-  `Secondo te, la provincia di Siena è ad alto o a basso rischio climatico?`,
   `Cosa si intende con demografia?`
 ];
 
@@ -43,7 +39,7 @@ function drawWheel(rot) {
     // Evidenzia spicchio selezionato centrato sotto la freccia
     const selectedIndex = getSelectedIndex(rotation);
     ctx.fillStyle = i === selectedIndex ? "#88e2f8ff" : colors[i % colors.length];
-    
+
 
     ctx.beginPath();
     ctx.moveTo(radius, radius);
